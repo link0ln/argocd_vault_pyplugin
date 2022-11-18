@@ -21,8 +21,12 @@ if sys.argv[1] == "-":
 else:
   pinput = open(sys.argv[1], 'r').read()
 
-vault_addr  = os.environ['VAULT_ADDR']
-vault_token = os.environ['VAULT_TOKEN']
+try:
+  vault_addr  = os.environ['ARGOCD_ENV_VAULT_ADDR']
+  vault_token = os.environ['ARGOCD_ENV_VAULT_TOKEN']
+except:
+  print('ERROR: env ARGOCD_ENV_VAULT_ADDR or ARGOCD_ENV_VAULT_TOKEN not found')
+  sys.exit(0)
 
 client = hvac.Client(
     url=vault_addr,
@@ -37,8 +41,7 @@ client = hvac.Client(
 
 if not client.is_authenticated():
   print('ERROR: not authenticated!')
-
-data = yaml.load(pinput, Loader=SafeLoader)
+  sys.exit(0)
 
 def kv_wrapper(match_obj):
   return client.secrets.kv.v1.read_secret(match_obj.group(1))['data'][match_obj.group(2)]
@@ -72,5 +75,12 @@ def follow_yaml(data):
         pass
   return data
 
-print(yaml.dump(follow_yaml(data)))
+docs = yaml.load_all(pinput, yaml.FullLoader)
+
+for data in docs:
+  try:
+    print('---')
+    print(yaml.dump(follow_yaml(data)))
+  except:
+    pass
 
