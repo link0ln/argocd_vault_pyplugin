@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-sourcefile=python_helm_vault.py
-binfile=python_helm_vault
+sourcefile=python-helm-vault.py
+binfile=python-helm-vault
 
 python3 -m pip install cython
 
